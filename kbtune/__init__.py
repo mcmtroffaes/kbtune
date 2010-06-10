@@ -110,6 +110,9 @@ class Note:
     def __eq__(self, other):
         return self.key == other.key and self.accidental == other.accidental
 
+    def __ne__(self, other):
+        return not(self == other)
+
     def __lt__(self, other):
         if self.key < other.key:
             return True
