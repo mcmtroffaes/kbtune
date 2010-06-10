@@ -313,6 +313,9 @@ class Temperament:
 
     >>> [str(note) for note in Temperament.NOTES]
     ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'G#', 'A', 'Bb', 'B']
+
+    >>> Temperament.SYNTONIC_COMMA # doctest: +ELLIPSIS
+    21.506...
     """
     NOTES = [
         Note(0),     # C
@@ -332,6 +335,9 @@ class Temperament:
 
     MAJOR_THIRD = Interval(Note('C'), Note('E'))
     PERFECT_FIFTH = Interval(Note('C'), Note('G'))
+
+    SYNTONIC_COMMA = ratio_to_cents((3 / 2) ** 4 / (2 * 2 * 5 / 4))
+    """Four fifths minus two octaves and a third."""
 
     def __init__(self):
         self.frequencies = [None] * 12
@@ -500,16 +506,16 @@ class Temperament:
         >>> temp.get_frequency(temp.tune_fifth_up(Note('G#')))
         337.5
         >>> temp.get_frequency(temp.tune_fifth_up(Note('G#'), -20)) # doctest: +ELLIPSIS
-        341.42...
+        333.62348...
         """
         ratio = cents_to_ratio(cents)
         next_note = note + self.PERFECT_FIFTH
         if next_note > note:
             self.set_frequency(next_note,
-                               self.get_frequency(note) * (ratio * 3 / 2))
+                               ratio * self.get_frequency(note) * (3 / 2))
         else:
             self.set_frequency(next_note,
-                               self.get_frequency(note) / (ratio * 4 / 3))
+                               ratio * self.get_frequency(note) / (4 / 3))
         return next_note
 
     def tune_fifths_up(self, note1, note2, cents=0):
@@ -528,10 +534,19 @@ class Temperament:
         while note != note2:
             note = self.tune_fifth_up(note, cents)
 
-    def tune_major_third(self, note1, note2, cents=0):
+    def tune_major_third_up(self, note, cents=0):
         """Tune a major third by tuning four identical fifths, such that the
         resulting third has the given deviation in cents.
+
+        >>> temp = Temperament()
+        >>> temp.set_frequency(Note('C'), 300)
+        >>> next_note = temp.tune_major_third_up(Note('C'))
+        >>> print(temp.get_frequency(next_note))
+        375.0
         """
+        next_note = note + self.MAJOR_THIRD
+        self.tune_fifths_up(note, next_note, (cents - self.SYNTONIC_COMMA) / 4)
+        return next_note
 
 if __name__ == '__main__':
     import doctest
