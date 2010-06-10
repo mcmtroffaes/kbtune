@@ -270,9 +270,6 @@ class Interval:
     def get_cents(self):
         return ratio_to_cents(self.get_ratio())
 
-    def __repr__(self):
-        return 
-
     def __str__(self):
         """String representation.
 
